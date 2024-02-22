@@ -10,7 +10,7 @@ This project focuses on color detection using OpenCV, a powerful computer vision
 
 My approach integrates several key steps:
 
-- Object Detection: Using YOLOv3, a state-of-the-art object detection algorithm, we identify objects in each frame of the webcam feed.
+- Object Detection: Using YOLO, a state-of-the-art object detection algorithm, we identify objects in each frame of the webcam feed.
 - Color Detection: For each detected object, we extract a circular region and compute its dominant color. This is achieved through color histograms and weighted averages.
 - Real-Time Processing: The application operates in real-time, updating the detected objects and their colors in each frame.
 
@@ -29,7 +29,16 @@ My approach integrates several key steps:
 The code follows a specific sequence of operations:
 
 - Capture the webcam feed frame by frame.
-- Apply YOLOv3 to detect objects in each frame.
+- Apply YOLO with OpenCV (YOLOv3-4-5) to detect objects in each frame.
 - For each detected object, calculate a circular region and extract its dominant color.
 - Display the results in real-time, showing the detected objects bounded by rectangles colored based on the dominant color in the corresponding region.
 
+
+## Run Locally
+
+Example configurations for run project
+
+```bash
+  python main.py --cfg path/to/yolov.cfg --weights path/to/yolov.weights --conf 0.5 --nms 0.4 --circle_diameter_factor 0.3
+
+```
