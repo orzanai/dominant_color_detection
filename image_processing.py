@@ -68,6 +68,13 @@ def process_video(cfg_path, weights_path, conf_threshold, nms_threshold, circle_
     
     net = cv2.dnn.readNet("./yolov3.weights",
                         "./yolov3.cfg")
+    
+    if cv2.cuda.getCudaEnabledDeviceCount() > 0:
+        net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+    else:
+        print("CUDA not available - defaulting to CPU. Performance may be significantly reduced.")
+
     layer_names = net.getLayerNames()
     output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
 
