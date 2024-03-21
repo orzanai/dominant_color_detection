@@ -63,12 +63,15 @@ class ObjectDetector:
         confidences = []
         class_ids = []
 
+        vehicle_class_ids = {2, 3, 4, 5, 6, 7, 8}
+
         for out in outs:
             for detection in out:
                 scores = detection[5:]
                 class_id = np.argmax(scores)
                 confidence = scores[class_id]
-                if confidence > self.confThreshold:
+
+                if confidence > self.confThreshold and class_id in vehicle_class_ids:
                     center_x = int(detection[0] * width)
                     center_y = int(detection[1] * height)
                     w = int(detection[2] * width)
