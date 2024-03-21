@@ -35,42 +35,45 @@ def crop_circle(image, center, radius):
     return cropped_image
 
 
-def find_combined_dominant_color(image, center, radius, n_clusters=3):
+def find_combined_dominant_color(image, n_clusters=3):
     """
-    Determines the dominant color within a specified circular region of an input image.
-    This is achieved by first applying a mask to isolate the circular region and then
-    performing k-means clustering on the pixels within this region to find clusters of
-    similar colors. The dominant color is calculated as a weighted average of these clusters,
-    where the weight is the proportion of pixels in each cluster.
+    Determines the dominant color within the entire cropped circular region of an input image.
+    This function performs k-means clustering to group similar colors and selects the dominant
+    color based on cluster compactness, coverage, and optionally, color preferences to accurately
+    reflect the subject's color.
 
     Parameters:
-    - image (numpy.ndarray): The input image containing the region of interest.
-    - center (tuple): A tuple (x, y) representing the center of the circle.
-    - radius (int): The radius of the circular region.
-    - n_clusters (int, optional): The number of clusters to use for k-means clustering. Defaults to 3.
+    - image (numpy.ndarray): The cropped image containing the circular region of interest.
+    - n_clusters (int, optional): The number of clusters to use for k-means clustering.
 
     Returns:
-    - tuple: A tuple (R, G, B) representing the dominant color in the RGB color space.
+    - tuple: A tuple (B, G, R) representing the dominant color in the BGR color space.
     """
 
-    mask = np.zeros(image.shape[:2], dtype="uint8")
-    cv2.circle(mask, center, radius, 255, -1)
+    pixels = image.reshape(-1, 3).astype(np.float32)
 
-    masked_image = cv2.bitwise_and(image, image, mask=mask)
-
-    masked_pixels = masked_image[mask == 255]
-
-    masked_pixels = np.float32(masked_pixels)
-
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
-    _, labels, centers = cv2.kmeans(masked_pixels, n_clusters, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+    _, labels, centers = cv2.kmeans(pixels, n_clusters, None,
+                                    (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2),
+                                    10, cv2.KMEANS_RANDOM_CENTERS)
 
     hist, _ = np.histogram(labels, bins=n_clusters, range=(0, n_clusters))
+    coverage = hist.astype(np.float32) / hist.sum()
 
-    weights = hist / np.sum(hist)
+    # Calculate compactness (distance of pixels to their cluster center)
+    compactness = np.zeros(n_clusters)
+    for i, center in enumerate(centers):
+        cluster_pixels = pixels[labels.flatten() == i]
+        compactness[i] = np.mean(np.linalg.norm(cluster_pixels - center, axis=1))
 
-    weighted_sum = sum(weight * center for weight, center in zip(weights, centers))
-    dominant_color = np.uint8(weighted_sum)
+    # Normalize compactness
+    compactness = 1 - (compactness / np.max(compactness))
+
+    # Combine coverage and compactness to score each cluster
+    scores = coverage * compactness
+
+    # Select the cluster with the highest score as the dominant color
+    dominant_index = np.argmax(scores)
+    dominant_color = centers[dominant_index]
     dominant_color = tuple([int(c) for c in dominant_color])
 
     return dominant_color
