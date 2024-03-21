@@ -4,6 +4,9 @@
 This project focuses on color detection using OpenCV, a powerful computer vision library. The core functionality of this application is to detect dominant colors in real-time through a webcam feed. I utilize advanced image processing techniques and object detection algorithms to achieve this goal.
 
 
+## Screencap
+
+![color-detection-cars](https://github.com/orzanai/color_detection/blob/main/test.gif)
 
 
 ## Approach
