@@ -1,14 +1,40 @@
-import argparse
-import image_processing
+import cv2
+from object_detection import ObjectDetector
+from color_detection import find_combined_dominant_color, get_dynamic_circle_diameter, crop_circle
 
-parser = argparse.ArgumentParser(description='YOLO Video Processing')
-parser.add_argument('--cfg', type=str, default='./yolov3.cfg', help='Path to YOLOv3 configuration file')
-parser.add_argument('--weights', type=str, default='./yolov3.weights', help='Path to YOLOv3 weights file')
-parser.add_argument('--conf', type=float, default=0.5, help='Confidence threshold for YOLO')
-parser.add_argument('--nms', type=float, default=0.4, help='NMS threshold for YOLO')
-parser.add_argument('--circle_diameter_factor', type=float, default=0.3, help='Circle diameter factor for cropping')
-parser.add_argument('--camera', type=int, default=0, help='Camera source')
+object_detector = ObjectDetector("yolo.weights_path",
+                                 "yolov.cfg_path")
 
-args = parser.parse_args()
+cap = cv2.VideoCapture(0) # 0 for real-time video capture, or path for video processing.
 
-image_processing.process_video(args.cfg, args.weights, args.conf, args.nms, args.circle_diameter_factor, args.camera)
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    color_circles = [] # Stores the dominant color of each detected circle, (R, G, B)
+    boxes, confidences, class_ids = object_detector.detect_objects(frame)
+
+    for i,box in enumerate(boxes):
+        x, y, w, h = box
+        center_x = int(x + w / 2)
+        center_y = int(y + h / 2)
+
+        radius = get_dynamic_circle_diameter(w, h)
+        cropped_circle = crop_circle(frame, (center_x, center_y), radius)
+        if cropped_circle.size > 0:
+            dominant_color = find_combined_dominant_color(cropped_circle, (radius, radius), radius, n_clusters=3)
+            color_circles.append(dominant_color)
+        else:
+            color_circles.append((0,0,0))
+
+        dominant_color = color_circles[i]
+        cv2.rectangle(frame, (x,y), (x+w, y+h), dominant_color, 2)
+
+
+    cv2.imshow("Frame", frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
