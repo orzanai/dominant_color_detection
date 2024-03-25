@@ -23,7 +23,7 @@ while True:
         radius = get_dynamic_circle_diameter(w, h)
         cropped_circle = crop_circle(frame, (center_x, center_y), radius)
         if cropped_circle.size > 0:
-            dominant_color = find_combined_dominant_color(cropped_circle, (radius, radius), radius, n_clusters=3)
+            dominant_color = find_combined_dominant_color(cropped_circle, n_clusters=3)
             color_circles.append(dominant_color)
         else:
             color_circles.append((0,0,0))
