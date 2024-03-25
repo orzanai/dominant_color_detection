@@ -2,8 +2,8 @@ import cv2
 from object_detection import ObjectDetector
 from color_detection import find_combined_dominant_color, get_dynamic_circle_diameter, crop_circle
 
-object_detector = ObjectDetector("yolo.weights_path",
-                                 "yolov.cfg_path")
+object_detector = ObjectDetector("./weights/yolo.weights", 
+                                 "./cfg/yolov.cfg") # YOLO object detector weights and configuration paths
 
 cap = cv2.VideoCapture(0) # 0 for real-time video capture, or path for video processing.
 
