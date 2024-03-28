@@ -14,7 +14,7 @@ This project focuses on color detection using OpenCV, a powerful computer vision
 My approach integrates several key steps:
 
 - Object Detection: Using YOLO, a state-of-the-art object detection algorithm, I identify objects in each frame of the webcam feed.
-- Color Detection: For each detected object, I extract a dynamic circular region and then performed k-means clustering k-means clustering to group similar colors and selects the dominant color based on cluster compactness and coverage.
+- Color Detection: For each detected object, I extract a dynamic circular region and then performed k-means clustering to group similar colors and selects the dominant color based on weighted score of cluster compactness and coverage.
 - Real-Time Processing: The application operates in real-time, updating the detected objects and their colors in each frame.
 
 
